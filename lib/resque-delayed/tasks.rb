@@ -2,6 +2,7 @@ require 'resque-delayed'
 
 # require 'resque-delayed/tasks'
 namespace :resque_delayed do
+  task :setup
 
   desc "Start a Resque::Delayed worker"
   task :work => :preload do
@@ -30,7 +31,7 @@ see resque-delayed/CHANGELOG.md for details}
     worker.work(ENV['INTERVAL'] || 5) # interval, will block
   end
   
-  task :preload do
+  task :preload => :setup do
     if defined?(Rails) && Rails.respond_to?(:application)
       # Rails 3
       Rails.application.eager_load!
