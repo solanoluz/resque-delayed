@@ -4,7 +4,7 @@ require 'resque-delayed'
 namespace :resque_delayed do
 
   desc "Start a Resque::Delayed worker"
-  task :work do
+  task :work => :preload do
     unless Resque.redis.instance_variable_get(:@redis).zcard("").zero?
       STDERR.puts %Q{
 WARNING: you have a sorted set stored at the empty string key in your redis instance
@@ -28,6 +28,17 @@ see resque-delayed/CHANGELOG.md for details}
     worker.log "Starting Resque::Delayed worker #{worker}"
 
     worker.work(ENV['INTERVAL'] || 5) # interval, will block
+  end
+  
+  task :preload do
+    if defined?(Rails) && Rails.respond_to?(:application)
+      # Rails 3
+      Rails.application.eager_load!
+    elsif defined?(Rails::Initializer)
+      # Rails 2.3
+      $rails_rake_task = false
+      Rails::Initializer.run :load_application_classes
+    end
   end
 
   desc "Migrate Resque::Delayed queue to new redis key after 1.1.0 upgrade"
