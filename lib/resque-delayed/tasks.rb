@@ -5,7 +5,7 @@ namespace :resque_delayed do
   task :setup
 
   desc "Start a Resque::Delayed worker"
-  task :work => :preload do
+  task :work => [ :preload, :setup ] do
     unless Resque.redis.instance_variable_get(:@redis).zcard("").zero?
       STDERR.puts %Q{
 WARNING: you have a sorted set stored at the empty string key in your redis instance
